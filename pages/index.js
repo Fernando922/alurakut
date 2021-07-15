@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, {useState, useEffect} from 'react'
 import Box from "../src/components/Box";
 import MainGrid from "../src/components/MainGrid";
 import {AlurakutMenu, AlurakutProfileSidebarMenuDefault, OrkutNostalgicIconSet} from '../src/lib/AlurakutCommons'
@@ -22,28 +22,64 @@ function ProfileSidebar({githubUser}){
   )
 }
 
+function ProfileRelationsBox(propriedades) {
+  const shuffledUsersList = propriedades.items.slice(0,6)
+
+  return (
+    <ProfileRelationsBoxWrapper>
+      <h2 className="smallTitle">
+        {propriedades.title} ({propriedades.items.length})
+      </h2>
+      <ul>
+        {
+          shuffledUsersList.map((itemAtual) => {
+            return (
+              <li key={itemAtual.login}>
+                <a href={`https://github.com/${itemAtual.login}.png`}>
+                  <img src={`${itemAtual.html_url}.png`} />
+                  <span>{itemAtual.login}</span>
+                </a>
+              </li>
+            )
+          })
+        }
+      </ul>
+    </ProfileRelationsBoxWrapper>
+  )
+}
+
 
 export default function Home() {
 
   const githubUser= "Fernando922"
   const pessoasFavoritas = ["DiegoRugue", "flaviogf", "fjcunha", "guibermaia", "GlHenrique", "akitaonrails"]
+  const [seguidores, setSeguidores] = useState([]);
   const [comunidades, setComunidades] = useState([
-    {
-      id: '12802378123789378912789789123896123', 
-      title: 'Eu odeio acordar cedo',
-      image: 'https://alurakut.vercel.app/capa-comunidade-01.jpg'
-    },
     {
       id: '12802378123789378912789789123896124', 
       title: 'Eu nunca terminei uma borracha',
       image: 'https://img.kalunga.com.br/fotosdeprodutos/070513z_3.jpg'
     },
     {
-      id: '12802378123789378912789789123896124', 
+      id: '12802378123789378912789789123896125', 
       title: 'Eu leio o shampoo no banho',
       image: 'https://img10.orkut.br.com/community/7f317952d5b5d35ca52aa4a3d7679c66.jpg'
     },
   ]);
+
+  useEffect(function() {
+    function fetchGithubUserFollowers(){
+      fetch(`https://api.github.com/users/${githubUser}/followers`)
+      .then(function (respostaDoServidor) {
+        return respostaDoServidor.json();
+      })
+      .then(function(respostaCompleta) {
+        setSeguidores(respostaCompleta);
+      })
+    }
+
+    fetchGithubUserFollowers()
+  }, [])
 
 
   const verifyCommunitiesLimit = () => {
@@ -68,6 +104,9 @@ export default function Home() {
     const comunidadesAtualizadas = [...comunidades, comunidade];
     setComunidades(comunidadesAtualizadas)
   }
+
+ 
+
 
   return (
     <>
@@ -115,6 +154,7 @@ export default function Home() {
         className="profileRelationsArea"
         style={{ gridArea: "profileRelationsArea" }}
       >
+        <ProfileRelationsBox title="Seguidores" items={seguidores} />
         <ProfileRelationsBoxWrapper>
             <h2 className="smallTitle">
               Comunidades ({comunidades.length})
